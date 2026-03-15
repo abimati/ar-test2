@@ -1,26 +1,66 @@
 <!DOCTYPE html>
 <html>
-  <head>
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+    <title>Maezen Digital AR</title>
     <script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/encantar-js@0.4.6/dist/encantar.min.js"></script>
-  </head>
-
-  <body style="margin: 0; overflow: hidden;">
     
-    <a-scene encantar="targetUrl: ./targets/card 4;">
-      
-      <a-assets>
-        <a-asset-item id="myModel" src="model.glb"></a-asset-item>
-      </a-assets>
+    <style>
+        body { margin: 0; overflow: hidden; background: #000; font-family: sans-serif; }
+        #overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: #000; z-index: 9999;
+            display: flex; flex-direction: column; justify-content: center; align-items: center;
+        }
+        .btn {
+            padding: 15px 40px; background: linear-gradient(135deg, #a855f7, #6366f1);
+            color: white; border: none; border-radius: 50px; font-weight: bold;
+            font-size: 1.2rem; cursor: pointer; box-shadow: 0 10px 20px rgba(0,0,0,0.4);
+        }
+    </style>
+</head>
+<body>
 
-      <a-entity encantar-target="id: 0">
-        <a-gltf-model src="#myModel" scale="0.1 0.1 0.1"></a-gltf-model>
-      </a-entity>
+    <div id="overlay">
+        <h1 style="color: white; margin-bottom: 30px;">Maezen Digital</h1>
+        <button class="btn" id="startBtn">START CAMERA</button>
+    </div>
 
-      <a-entity camera></a-entity>
+    <a-scene 
+        encantar="targetUrl: targets/card 4; autoStart: false; debug: false;"
+        renderer="antialias: true; powerPreference: high-performance;"
+        vr-mode-ui="enabled: false">
 
+        <a-assets>
+            <a-asset-item id="myModel" src="model.glb"></a-asset-item>
+        </a-assets>
+
+        <a-entity encantar-target="id: 0">
+            <a-gltf-model src="#myModel" scale="0.1 0.1 0.1"></a-gltf-model>
+        </a-entity>
+
+        <a-entity camera></a-entity>
     </a-scene>
 
-  </body>
+    <script>
+        const btn = document.getElementById('startBtn');
+        const overlay = document.getElementById('overlay');
+        const scene = document.querySelector('a-scene');
+
+        btn.addEventListener('click', () => {
+            // 1. Hide overlay
+            overlay.style.display = 'none';
+
+            // 2. Force Start AR (This satisfies Safari/Chrome requirements)
+            if (scene.systems.encantar) {
+                scene.systems.encantar.start();
+            }
+            
+            // 3. Optional haptic pulse
+            if ("vibrate" in navigator) navigator.vibrate(50);
+        });
+    </script>
+</body>
 </html>
