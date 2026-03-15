@@ -3,35 +3,44 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
-    <title>Maezen Digital | Camera Fix</title>
+    <title>Maezen Digital | AR</title>
     
     <script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/encantar-js@0.4.6/dist/encantar.min.js"></script>
 
     <style>
-        body { margin: 0; background: #000; color: white; font-family: sans-serif; }
-        #camera-error {
+        :root { --brand-purple: linear-gradient(135deg, #a855f7 0%, #6366f1 100%); }
+        body { margin: 0; overflow: hidden; background: #000; font-family: sans-serif; }
+        
+        /* Premium Entry Button (No bad popups) */
+        #entry-screen {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.9); display: none; /* Only shows if error occurs */
-            justify-content: center; align-items: center; text-align: center; z-index: 9999;
+            background: #000; z-index: 10000;
+            display: flex; flex-direction: column; justify-content: center; align-items: center;
         }
-        .btn { background: #a855f7; border: none; padding: 10px 20px; color: white; border-radius: 5px; cursor: pointer; }
+        .brand-logo {
+            font-size: 2.5rem; font-weight: 800; margin-bottom: 30px;
+            background: var(--brand-purple); -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+        }
+        .start-btn {
+            padding: 15px 40px; font-size: 1rem; font-weight: bold; color: white;
+            background: var(--brand-purple); border: none; border-radius: 50px;
+            cursor: pointer; box-shadow: 0 10px 20px rgba(168, 85, 247, 0.3);
+            text-transform: uppercase; letter-spacing: 2px;
+        }
     </style>
 </head>
 
 <body>
-    <div id="camera-error">
-        <div>
-            <h2>ካሜራው አልተከፈተም</h2>
-            <p>Camera not opening. Please ensure you are using HTTPS and granted permissions.</p>
-            <button class="btn" onclick="location.reload()">RELOAD PAGE</button>
-        </div>
+    <div id="entry-screen">
+        <div class="brand-logo">Maezen Digital</div>
+        <button class="start-btn" id="start-ar">Start Experience</button>
     </div>
 
     <a-scene 
-        encantar="targetUrl: ./targets/card 4; debug: false;"
+        encantar="targetUrl: ./targets/card 4; autoStart: false; debug: false;"
         renderer="antialias: true; powerPreference: high-performance;"
-        vr-mode-ui="enabled: false">
+        vr-mode-ui="enabled: false" device-orientation-permission-ui="enabled: false">
 
         <a-assets>
             <a-asset-item id="myModel" src="./model.glb"></a-asset-item>
@@ -45,25 +54,20 @@
     </a-scene>
 
     <script>
-        // FORCED CAMERA CHECK
-        async function checkCamera() {
-            try {
-                const stream = await navigator.mediaDevices.getUserMedia({ video: true });
-                console.log("Camera access granted");
-                // Stop the stream immediately, Encantar will take over
-                stream.getTracks().forEach(track => track.stop());
-            } catch (err) {
-                console.error("Camera Error:", err);
-                document.getElementById('camera-error').style.display = 'flex';
-            }
-        }
+        const entryScreen = document.getElementById('entry-screen');
+        const startBtn = document.getElementById('start-ar');
+        const scene = document.querySelector('a-scene');
 
-        // Run check on load
-        window.addEventListener('load', checkCamera);
+        startBtn.addEventListener('click', () => {
+            // 1. Hide the entry screen
+            entryScreen.style.opacity = '0';
+            setTimeout(() => { entryScreen.style.display = 'none'; }, 500);
 
-        // Debug: Log if Encantar fails to start
-        document.querySelector('a-scene').addEventListener('loaded', () => {
-            console.log("AR Scene Loaded");
+            // 2. Manually trigger the AR engine
+            // This satisfies the browser's "user gesture" requirement for the camera
+            scene.systems.encantar.start();
+            
+            if ("vibrate" in navigator) navigator.vibrate(50);
         });
     </script>
 </body>
